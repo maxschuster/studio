@@ -6,6 +6,7 @@ use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
+use Composer\Repository\FilterRepository;
 use Composer\Repository\PathRepository;
 use Composer\Script\ScriptEvents;
 use Studio\Config\Config;
@@ -58,11 +59,15 @@ class StudioPlugin implements PluginInterface, EventSubscriberInterface
         foreach ($this->getManagedPaths() as $path) {
             $this->io->writeError("[Studio] Loading path $path");
 
-            $repoManager->prependRepository(new PathRepository(
+            $pathRepository = new PathRepository(
                 ['url' => $path],
                 $this->io,
                 $composerConfig
-            ));
+            );
+
+            $filterRepository = new FilterRepository($pathRepository, ['canonical' => false]);
+
+            $repoManager->prependRepository($filterRepository);
         }
     }
 
